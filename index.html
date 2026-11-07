@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>じわかわドリブル ⚽ - サッカードット絵アクション</title>
   <link rel="stylesheet" href="style.css">
   <!-- レトロゲーム風フォント -->
@@ -11,12 +11,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="game-container">
-    <!-- キャンバス本体 -->
-    <canvas id="gameCanvas" width="800" height="450"></canvas>
+  <div id="game-wrapper">
+    <div id="game-container">
+      <!-- キャンバス本体 -->
+      <canvas id="gameCanvas" width="800" height="450"></canvas>
 
-    <!-- レトロUIオーバーレイ -->
-    <div id="ui-layer">
+      <!-- スマホ向け下部タッチガイド -->
+      <div id="mobile-touch-hint" class="mobile-touch-hint">
+        👆 画面タップでジャンプ！（長押しで大ジャンプ）
+      </div>
+
+      <!-- レトロUIオーバーレイ -->
+      <div id="ui-layer">
       <!-- プレイ中ヘッダー -->
       <div id="hud" class="hud-panel">
         <div class="hud-item">
@@ -99,8 +105,9 @@
       </div>
     </div>
   </div>
+</div>
 
-  <script src="game.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
 

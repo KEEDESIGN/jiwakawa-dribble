@@ -12,15 +12,32 @@ class SoundEngine {
     this.enabled = true;
     this.bgmTimer = null;
     this.bgmStep = 0;
+    this.unlocked = false;
   }
 
   init() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AudioCtx();
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+    if (!this.enabled) return;
+    try {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+        }
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      // iOS Safari等のオーディオコンテキストをアンロック
+      if (this.ctx && !this.unlocked) {
+        const buffer = this.ctx.createBuffer(1, 1, 22050);
+        const source = this.ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.ctx.destination);
+        source.start(0);
+        this.unlocked = true;
+      }
+    } catch (e) {
+      // 音声再生がブロックされてもゲーム本体を止めない
     }
   }
 
@@ -638,60 +655,97 @@ class DribbleGame {
     SpriteRenderer.drawBall(pCtx, 68, 86, 22, 0.2);
   }
 
-  // イベント登録
+  // イベント登録（PC・スマホ両対応）
   initEvents() {
-    // ジャンプアクション（キー＆タッチ）
-    const handleActionDown = (e) => {
-      if (e.target && e.target.tagName === 'BUTTON') return;
+    const container = document.getElementById('game-container');
+    const startScreen = document.getElementById('start-screen');
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const wrapper = document.getElementById('game-wrapper');
+
+    // 画面全体のタップ/クリック時の統一ハンドラ
+    const handleGlobalActionDown = (e) => {
+      // 音声アンロック（iOS対策）
+      this.sound.init();
+
+      // サウンドボタンやGAMES一覧リンクなどの操作は除外
+      if (e && e.target) {
+        if (e.target.id === 'sound-toggle' || e.target.closest('#sound-toggle')) return;
+        if (e.target.classList.contains('hub-btn') || e.target.closest('.hub-btn')) return;
+      }
+
       if (this.state === 'START') {
+        if (e && e.cancelable && e.type && e.type.startsWith('touch')) e.preventDefault();
         this.startGame();
       } else if (this.state === 'PLAYING') {
+        if (e && e.cancelable && e.type && e.type.startsWith('touch')) e.preventDefault();
         this.jump();
       } else if (this.state === 'GAMEOVER') {
+        if (e && e.cancelable && e.type && e.type.startsWith('touch')) e.preventDefault();
         this.restartGame();
       }
     };
 
-    const handleActionUp = () => {
+    const handleGlobalActionUp = () => {
       this.player.jumpHold = false;
     };
 
+    // 1. キーボード操作
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         e.preventDefault();
-        handleActionDown(e);
+        handleGlobalActionDown(e);
       }
     });
 
     window.addEventListener('keyup', (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
-        handleActionUp();
+        handleGlobalActionUp();
       }
     });
 
-    // モバイル・マウスタッチ
-    this.canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      handleActionDown(e);
-    }, { passive: false });
+    // 2. モバイルタッチ ＆ マウス（画面全体・コンテナ全体で確実に拾う）
+    const bindPointer = (element) => {
+      if (!element) return;
+      
+      // Pointer Events (モダンブラウザ標準)
+      element.addEventListener('pointerdown', (e) => {
+        handleGlobalActionDown(e);
+      });
+      element.addEventListener('pointerup', handleGlobalActionUp);
+      element.addEventListener('pointercancel', handleGlobalActionUp);
 
-    this.canvas.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      handleActionUp();
-    }, { passive: false });
+      // Touch Events (iOS Safariフォールバック)
+      element.addEventListener('touchstart', (e) => {
+        handleGlobalActionDown(e);
+      }, { passive: false });
+      element.addEventListener('touchend', handleGlobalActionUp, { passive: true });
+    };
 
-    this.canvas.addEventListener('mousedown', (e) => {
-      handleActionDown(e);
-    });
+    bindPointer(this.canvas);
+    bindPointer(container);
+    bindPointer(startScreen);
+    bindPointer(gameoverScreen);
+    bindPointer(wrapper);
 
-    window.addEventListener('mouseup', () => {
-      handleActionUp();
-    });
+    // 3. 各ボタンの個別ハンドリング（タップでもクリックでも絶対に100%即座に反応）
+    const bindButton = (btn, action) => {
+      if (!btn) return;
+      const handler = (e) => {
+        if (e) {
+          e.stopPropagation();
+          if (e.cancelable && e.type && e.type.startsWith('touch')) e.preventDefault();
+        }
+        this.sound.init();
+        action();
+      };
+      btn.addEventListener('pointerdown', handler);
+      btn.addEventListener('touchstart', handler, { passive: false });
+      btn.addEventListener('click', handler);
+    };
 
-    // ボタン
-    this.startBtn.addEventListener('click', () => this.startGame());
-    this.restartBtn.addEventListener('click', () => this.restartGame());
-    this.soundBtn.addEventListener('click', () => {
+    bindButton(this.startBtn, () => this.startGame());
+    bindButton(this.restartBtn, () => this.restartGame());
+    bindButton(this.soundBtn, () => {
       const enabled = this.sound.toggle();
       this.soundBtn.textContent = enabled ? '🔊 ON' : '🔇 OFF';
     });

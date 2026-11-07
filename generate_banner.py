@@ -152,3 +152,4 @@ draw.text((width - 132, 22), "★ NEW ★", font=font_sub, fill=(255, 255, 255))
 os.makedirs("/Users/ken/.gemini/antigravity-ide/scratch/townsnap-gallery-web/public/games/assets", exist_ok=True)
 img.save("/Users/ken/.gemini/antigravity-ide/scratch/townsnap-gallery-web/public/games/assets/dribble_banner.png", "PNG")
 print("Banner saved successfully!")
+
