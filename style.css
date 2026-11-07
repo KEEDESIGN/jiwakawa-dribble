@@ -1,0 +1,374 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+body {
+  background: #0f1423;
+  color: #fff;
+  font-family: 'Press Start 2P', 'DotGothic16', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+#game-container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
+  background: #1a2639;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 0 4px #2c3e50;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* キャンバスをピクセルパーフェクトで描画 */
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* プレイ中HUD */
+.hud-panel {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 15, 25, 0.85);
+  border: 2px solid #3fa9f5;
+  border-radius: 6px;
+  padding: 8px 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  pointer-events: auto;
+}
+
+.hud-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.hud-label {
+  font-size: 10px;
+  color: #88c0d0;
+  letter-spacing: 1px;
+}
+
+.hud-val {
+  font-size: 16px;
+  color: #ebcb8b;
+  font-weight: bold;
+}
+
+.hud-unit {
+  font-size: 9px;
+  color: #d8dee9;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hub-btn {
+  background: #0984e3;
+  border-color: #74b9ff;
+  color: #fff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* レトロボタンスタイル */
+.retro-btn {
+  background: #2e3440;
+  color: #eceff4;
+  border: 3px solid #eceff4;
+  box-shadow: 3px 3px 0px #000;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.05s, box-shadow 0.05s;
+}
+
+.retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000;
+}
+
+/* オーバーレイ共通 */
+.overlay-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 14, 26, 0.92);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  pointer-events: auto;
+  z-index: 10;
+  backdrop-filter: blur(3px);
+}
+
+.overlay-screen.active {
+  display: flex;
+}
+
+/* タイトル画面 */
+.title-card {
+  margin-bottom: 12px;
+}
+
+.logo-badge {
+  font-size: 11px;
+  color: #55efc4;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.game-title {
+  font-size: 30px;
+  line-height: 1.2;
+  color: #ffffff;
+  text-shadow: 4px 4px 0 #0984e3, -2px -2px 0 #000;
+  letter-spacing: 2px;
+}
+
+.title-highlight {
+  color: #ffeaa7;
+  text-shadow: 4px 4px 0 #d63031, -2px -2px 0 #000;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #a4b0be;
+  margin-top: 6px;
+  font-family: 'DotGothic16', monospace;
+}
+
+.player-preview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px dashed #74b9ff;
+  border-radius: 8px;
+}
+
+#previewCanvas {
+  image-rendering: pixelated;
+  width: 90px;
+  height: 90px;
+}
+
+.preview-text {
+  font-size: 10px;
+  color: #74b9ff;
+  margin-top: 4px;
+  font-family: 'DotGothic16', monospace;
+}
+
+.instructions-box {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid #576574;
+  border-radius: 6px;
+  padding: 10px 16px;
+  max-width: 480px;
+  margin-bottom: 16px;
+}
+
+.instruction-row {
+  font-size: 11px;
+  color: #f1f2f6;
+  margin-bottom: 6px;
+  font-family: 'DotGothic16', monospace;
+}
+
+.key-icon {
+  display: inline-block;
+  background: #dfe4ea;
+  color: #2f3542;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 10px;
+  border-bottom: 2px solid #a4b0be;
+}
+
+.instruction-desc {
+  font-size: 10px;
+  color: #ced6e0;
+  line-height: 1.5;
+  font-family: 'DotGothic16', monospace;
+}
+
+.start-pulse {
+  background: #00b894;
+  color: #fff;
+  border-color: #55efc4;
+  font-size: 15px;
+  padding: 12px 28px;
+  box-shadow: 4px 4px 0px #006266;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+.tap-hint {
+  margin-top: 12px;
+  font-size: 10px;
+  color: #a4b0be;
+  font-family: 'DotGothic16', monospace;
+  animation: blink 1.5s infinite;
+}
+
+/* ゲームオーバー画面 */
+.referee-whistle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.card-icon {
+  width: 24px;
+  height: 36px;
+  border-radius: 3px;
+  border: 2px solid #fff;
+  box-shadow: 2px 2px 0 #000;
+}
+
+.red-card {
+  background: #ff3838;
+}
+
+.whistle-banner {
+  font-size: 22px;
+  color: #ff3838;
+  text-shadow: 3px 3px 0 #000;
+  letter-spacing: 2px;
+}
+
+.gameover-sub {
+  font-size: 13px;
+  color: #f8a5c2;
+  margin-bottom: 16px;
+  font-family: 'DotGothic16', monospace;
+}
+
+.result-board {
+  background: #1e272e;
+  border: 3px solid #ff5252;
+  border-radius: 8px;
+  padding: 16px 24px;
+  width: 320px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #d2dae2;
+  margin-bottom: 10px;
+  font-family: 'DotGothic16', monospace;
+}
+
+.result-num {
+  font-size: 15px;
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.highlight-row {
+  border-top: 2px dashed #485460;
+  padding-top: 10px;
+  margin-bottom: 0;
+  color: #ffd32a;
+}
+
+.highlight-row .result-num {
+  color: #ffd32a;
+}
+
+.new-record-badge {
+  margin-top: 10px;
+  color: #fffa65;
+  font-size: 12px;
+  text-shadow: 2px 2px 0 #ff3838;
+  animation: pulse 0.8s infinite;
+}
+
+.restart-pulse {
+  background: #ff5252;
+  color: #fff;
+  border-color: #ff7979;
+  font-size: 14px;
+  padding: 12px 24px;
+  box-shadow: 4px 4px 0px #b33939;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* スマホ縦向きなどの小型画面対応 */
+@media (max-width: 600px) {
+  .game-title { font-size: 20px; }
+  .hud-panel { padding: 4px 10px; }
+  .hud-label { font-size: 8px; }
+  .hud-val { font-size: 13px; }
+  .instructions-box { padding: 8px 12px; font-size: 9px; }
+  .result-board { width: 90%; padding: 12px; }
+}
+

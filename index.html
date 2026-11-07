@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>じわかわドリブル ⚽ - サッカードット絵アクション</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- レトロゲーム風フォント -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- キャンバス本体 -->
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
+
+    <!-- レトロUIオーバーレイ -->
+    <div id="ui-layer">
+      <!-- プレイ中ヘッダー -->
+      <div id="hud" class="hud-panel">
+        <div class="hud-item">
+          <span class="hud-label">BEATEN</span>
+          <span id="score-val" class="hud-val">0</span>
+          <span class="hud-unit">人</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">DISTANCE</span>
+          <span id="dist-val" class="hud-val">0</span>
+          <span class="hud-unit">m</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">HI-SCORE</span>
+          <span id="hiscore-val" class="hud-val">0</span>
+        </div>
+        <div class="hud-item header-actions">
+          <a href="/games/" class="retro-btn hub-btn" title="GAMES一覧へ">🎮 GAMES</a>
+          <button id="sound-toggle" class="retro-btn" title="サウンド切替">🔊 ON</button>
+        </div>
+      </div>
+
+      <!-- スタート画面 -->
+      <div id="start-screen" class="overlay-screen active">
+        <div class="title-card">
+          <div class="logo-badge">⚽ 8-BIT SOCCER RUN ⚽</div>
+          <h1 class="game-title">JIWAKAWA<br><span class="title-highlight">DRIBBLE</span></h1>
+          <p class="subtitle">〜 じわかわドリブル！DFをかわして突き進め！ 〜</p>
+        </div>
+        
+        <div class="player-preview-card">
+          <canvas id="previewCanvas" width="120" height="120"></canvas>
+          <div class="preview-text">川崎フロンターレ風 水色×黒縦縞ストライカー</div>
+        </div>
+
+        <div class="instructions-box">
+          <div class="instruction-row">
+            <span class="key-icon">TAP</span> または <span class="key-icon">SPACE</span>
+            <span>: ジャンプ（長押しで大ジャンプ）</span>
+          </div>
+          <div class="instruction-desc">
+            迫り来るスライディング・タックル・巨漢DFや、足を取られる荒れた芝を跳び越えろ！
+          </div>
+        </div>
+
+        <button id="start-btn" class="retro-btn start-pulse">▶ KICK OFF !</button>
+        <div class="tap-hint">画面タップ または スペースキーでスタート</div>
+      </div>
+
+      <!-- ゲームオーバー画面 -->
+      <div id="gameover-screen" class="overlay-screen">
+        <div class="referee-whistle">
+          <div class="card-icon red-card"></div>
+          <div class="whistle-banner">FOUL / GAME OVER!</div>
+        </div>
+
+        <h2 id="gameover-reason" class="gameover-sub">ディフェンダーに潰された！</h2>
+
+        <div class="result-board">
+          <div class="result-row">
+            <span>かわしたDF数</span>
+            <span id="final-score" class="result-num">0 人</span>
+          </div>
+          <div class="result-row">
+            <span>ドリブル突破距離</span>
+            <span id="final-dist" class="result-num">0 m</span>
+          </div>
+          <div class="result-row highlight-row">
+            <span>最高記録</span>
+            <span id="final-hiscore" class="result-num">0 人</span>
+          </div>
+          <div id="new-record-tag" class="new-record-badge" style="display: none;">★ NEW RECORD! ★</div>
+        </div>
+
+        <div class="result-actions">
+          <button id="restart-btn" class="retro-btn restart-pulse">🔄 RETRY (再挑戦)</button>
+          <a href="/games/" class="retro-btn hub-btn">🎮 GAMES一覧</a>
+        </div>
+        <div class="tap-hint">画面タップ または スペースキーで再スタート</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
+
